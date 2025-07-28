@@ -1,0 +1,81 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:15
+    container_name: postgres
+    restart: always
+    env_file: .env
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASS}
+      POSTGRES_DB: ${DATABASE_DBNAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/scripts/init_db.sql:/docker-entrypoint-initdb.d/init.sql
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend
+    command: ["bash", "start.sh"]
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./backend/uploads:/app/uploads
+    depends_on:
+      - db
+    env_file: .env
+    environment:
+      - DATABASE_HOST=${DATABASE_HOST}
+      - DATABASE_PORT=${DATABASE_PORT}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASS=${DATABASE_PASS}
+      - DATABASE_DBNAME=${DATABASE_DBNAME}
+      - UPLOAD_DIR=${UPLOAD_DIR}
+      - PGHOST=${PGHOST}
+      - PGPORT=${PGPORT}
+      - PGUSER=${PGUSER}
+      - PGPASSWORD=${PGPASSWORD}
+      - PGDATABASE=${PGDATABASE}
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    env_file: .env
+
+  cronjob:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: cronjob
+    command: ["bash", "cron.sh"]
+    volumes:
+      - ./backend/uploads:/app/uploads
+    depends_on:
+      - db
+    env_file: .env
+    environment:
+      - DATABASE_HOST=${DATABASE_HOST}
+      - DATABASE_PORT=${DATABASE_PORT}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASS=${DATABASE_PASS}
+      - DATABASE_DBNAME=${DATABASE_DBNAME}
+      - UPLOAD_DIR=${UPLOAD_DIR}
+      - PGHOST=${PGHOST}
+      - PGPORT=${PGPORT}
+      - PGUSER=${PGUSER}
+      - PGPASSWORD=${PGPASSWORD}
+      - PGDATABASE=${PGDATABASE}
+
+volumes:
+  postgres_data:

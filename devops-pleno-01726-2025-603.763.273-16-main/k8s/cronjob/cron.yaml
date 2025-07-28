@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: clean-csv
+spec:
+  schedule: "*/5 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: cronjob
+              image: hermaniosan124/backend:latest
+              command: ["bash", "cron.sh"]
+              volumeMounts:
+                - name: uploads
+                  mountPath: /app/uploads
+              envFrom:
+                - configMapRef:
+                    name: backend-config
+                - secretRef:
+                    name: backend-secret
+          restartPolicy: OnFailure
+          volumes:
+            - name: uploads
+              persistentVolumeClaim:
+                claimName: uploads-pvc
