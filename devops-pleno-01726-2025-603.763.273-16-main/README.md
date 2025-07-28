@@ -1,6 +1,6 @@
 ## 1\. Visão Geral do Projeto
 
-Este projeto tem como objetivo principal demonstrar a construção e implantação de uma aplicação web Fullstack modularizada em um ambiente conteinerizado e orquestrado por Kubernetes. O trabalho simula um ciclo completo de desenvolvimento e deploy em um cenário DevOps, incluindo a automação do build e push de imagens Docker para um registro e a orquestração de recursos no cluster.
+Este projeto tem como objetivo principal demonstrar a construção e implantação de uma aplicação web Fullstack modularizada em um ambiente conteinerizado e orquestrado por Kubernetes. O projeto simula um ciclo completo de desenvolvimento e deploy em um cenário DevOps, incluindo a automação do build e push de imagens Docker para um registro e a orquestração de recursos no cluster.
 
 ### Componentes da Aplicação:
 
@@ -138,7 +138,7 @@ Se o Minikube estiver sendo utilizado para o cluster local, os seguintes passos 
 
 ### Configuração dos Dockerfiles
 
-Os `Dockerfiles` (`backend/Dockerfile` e `frontend/Dockerfile`) são projetados com **Multi-stage Builds**. Esta técnica é crucial para otimizar o tamanho final das imagens Docker, resultando em contêineres mais leves e eficientes para o ambiente de produção. Além disso, as configurações são injetadas via **ConfigMaps e Secrets do Kubernetes** em tempo de execução, garantindo que os `Dockerfiles` sejam agnósticos a variáveis de ambiente hardcoded e não copiem arquivos `.env`.
+Os `Dockerfiles` (`backend/Dockerfile` e `frontend/Dockerfile`) são projetados com **Multi-stage Builds**. Esta técnica otimiza o tamanho final das imagens Docker, resultando em contêineres mais leves e eficientes para o ambiente de produção. Além disso, as configurações são injetadas via **ConfigMaps e Secrets do Kubernetes** em tempo de execução, garantindo que os `Dockerfiles` sejam agnósticos a variáveis de ambiente hardcoded e não copiem arquivos `.env`.
 
 **`backend/Dockerfile` (Exemplo com Multi-stage Build):**
 
@@ -239,11 +239,11 @@ server {
 }
 ```
 
-**`.dockerignore`:** É fundamental ter arquivos `.dockerignore` nas pastas `backend/` e `frontend/`. Eles instruem o Docker a ignorar arquivos e pastas desnecessárias (ex: `.git`, `node_modules`, `venv`, arquivos de cache) durante o processo de build da imagem, o que acelera o build e reduz significativamente o tamanho final da imagem.
+**`.dockerignore`:** Arquivos `.dockerignore` nas pastas `backend/` e `frontend/` são essenciais. Eles instruem o Docker a ignorar arquivos e pastas desnecessárias (ex: `.git`, `node_modules`, `venv`, arquivos de cache) durante o processo de build da imagem, o que acelera o build e reduz significativamente o tamanho final da imagem.
 
 ### Pipelines de CI/CD (Simulação - Build e Publicação de Imagens Docker)
 
-Um script shell (`scripts/deploy.sh`) é fornecido para simular as etapas cruciais de um pipeline de CI/CD. Este script automatiza o processo de build das imagens Docker, a geração de tags dinâmicas, o push dessas imagens para o Docker Hub e a atualização dos nomes das imagens nos manifestos Kubernetes.
+Um script shell (`scripts/deploy.sh`) simula as etapas cruciais de um pipeline de CI/CD. Este script automatiza o processo de build das imagens Docker, a geração de tags dinâmicas, o push dessas imagens para o Docker Hub e a atualização dos nomes das imagens nos manifestos Kubernetes.
 
 #### Autenticação no Docker Hub
 
@@ -367,7 +367,7 @@ chmod +x scripts/deploy.sh
 
 ### Manifestos Kubernetes (`k8s/`)
 
-Os manifestos YAML na pasta `k8s/` definem a infraestrutura e os componentes da aplicação no cluster Kubernetes. Eles são organizados por serviço para facilitar a gestão.
+Na pasta `k8s/`, os manifestos YAML definem a infraestrutura e os componentes da aplicação no cluster Kubernetes. Eles são organizados por serviço para facilitar a gestão.
 
 #### ConfigMaps e Secrets
 
@@ -408,7 +408,7 @@ Gerenciam as configurações e dados sensíveis da aplicação de forma segura e
 
 #### Persistent Volumes e Persistent Volume Claims (PV/PVC)
 
-Essenciais para garantir a persistência dos dados, assegurando que informações críticas (como dados do PostgreSQL e arquivos de upload) não sejam perdidas, mesmo em caso de reinício ou recriação dos pods.
+Garantir a persistência dos dados é essencial, assegurando que informações críticas (como dados do PostgreSQL e arquivos de upload) não sejam perdidas, mesmo em caso de reinício ou recriação dos pods.
 
   * **`k8s/db/pvc.yaml` (PVC para o Banco de Dados):**
     ```yaml
@@ -914,7 +914,7 @@ Após a implantação dos manifestos, é crucial monitorar e verificar o funcion
     ```bash
     minikube service frontend-service --url
     ```
-    Este comando fornecerá a URL para acessar a aplicação no navegador. Copie e cole no seu browser.
+    Este comando mostra a URL para acessar a aplicação no navegador. Copie e cole no seu browser.
   * **Teste da comunicação Frontend-Backend:**
     Navegue pela aplicação Frontend e verifique se as requisições para o Backend (ex: listagem de produtos, upload de arquivos) estão funcionando corretamente.
   * **Teste da comunicação Backend-PostgreSQL:**
@@ -967,7 +967,7 @@ Durante o processo de desenvolvimento e implantação deste projeto, alguns desa
 
   * **Problema:** Um erro específico que ocorreu durante o push da imagem do backend, mesmo após corrigir as tags, indicando `unsupported media type application/vnd.in-toto+json`.
   * **Diagnóstico:** Este erro pode sugerir uma incompatibilidade no formato da imagem Docker, problemas relacionados a assinaturas de conteúdo (Docker Content Trust) ou artefatos de build incompletos/corrompidos. A causa mais comum está relacionada à construção da imagem para uma arquitetura inesperada ou problemas de metadados da imagem.
-  * **Solução:** Para contornar este problema durante o desenvolvimento, foi adotada a reconstrução da imagem do backend, especificando a plataforma `linux/amd64` e desativando temporariamente o `DOCKER_CONTENT_TRUST`.
+  * **Solução:** Para contornar este problema durante o desenvolvimento, a reconstrução da imagem do backend foi realizada, especificando a plataforma `linux/amd64` e desativando temporariamente o `DOCKER_CONTENT_TRUST`.
     ```bash
     export DOCKER_CONTENT_TRUST=0 # Desativa temporariamente a verificação de confiança do conteúdo Docker
     docker build --platform linux/amd64 -t usuario-a-ser-utilizado/seu_repo_backend:latest .
@@ -993,7 +993,7 @@ Durante o processo de desenvolvimento e implantação deste projeto, alguns desa
 ### Backend 0/1 READY (Probes de Saúde)
 
   * **Problema:** Após a imagem do backend ser puxada com sucesso e o contêiner iniciar, o pod permanecia no status `0/1 READY`, mesmo que a aplicação parecesse estar rodando internamente.
-  * **Diagnóstico:** A análise dos logs do pod do backend (`kubectl logs <pod-backend>`) revelou que o aplicativo Uvicorn estava iniciando e rodando na porta 8081, mas as requisições para o endpoint `/health` (usado pelas Liveness e Readiness Probes do Kubernetes) estavam retornando `404 Not Found`. Isso indicava que a aplicação FastAPI não possuía ou não respondia a esse endpoint de saúde configurado no `deployment.yaml`.
+  * **Diagnóstico:** Os logs do pod do backend mostraram que o aplicativo Uvicorn estava iniciando e rodando na porta 8081, mas as requisições para o endpoint `/health` (usado pelas Liveness e Readiness Probes do Kubernetes) estavam retornando `404 Not Found`. Isso indicava que a aplicação FastAPI não possuía ou não respondia a esse endpoint de saúde configurado no `deployment.yaml`.
   * **Solução Adotada (Temporária para este projeto):** Para garantir que o pod do backend atingisse o status `1/1 READY` e permitisse o prosseguimento da implantação e testes, as seções `livenessProbe` e `readinessProbe` foram **temporariamente removidas** do arquivo `k8s/backend/deployment.yaml`.
     *Exemplo de alteração no `k8s/backend/deployment.yaml` (linhas que foram comentadas/removidas):*
     ```yaml
@@ -1023,9 +1023,9 @@ Durante o processo de desenvolvimento e implantação deste projeto, alguns desa
   * **Implicações da Solução Temporária:** Embora a remoção das probes resolva o problema imediato do pod `0/1 READY`, ela **compromete a robustez e a confiabilidade da aplicação em um ambiente de produção**. Sem Liveness Probes, o Kubernetes não consegue detectar e reiniciar automaticamente um contêiner travado. Sem Readiness Probes, o Kubernetes pode direcionar tráfego para um pod que ainda não está pronto para recebê-lo, causando erros para os usuários.
   * **Próximo Passo Essencial:** A **solução ideal e recomendada** é **adicionar e implementar os endpoints `/health` e `/ready` no código da aplicação backend (FastAPI)** que retornem `HTTP 200 OK` quando a aplicação estiver saudável, inicializada e pronta para receber tráfego. Após a implementação, as probes **devem ser reativadas** no `k8s/backend/deployment.yaml` para aproveitar os recursos de autorrecuperação do Kubernetes.
 
-## 7\. Considerações Finais e Próximos Passos
+## 8\. Considerações Finais e Próximos Passos
 
-Este projeto demonstra conteinerização e orquestração de uma aplicação fullstack em um ambiente Kubernetes. Atualmente, o Frontend, PostgreSQL e o CronJob estão operacionais e no status `Running`/`Completed`. O Backend também está `Running` e `1/1 READY` (com a observação sobre as probes de saúde).
+O projeto demonstra a conteinerização e orquestração de uma aplicação fullstack em um ambiente Kubernetes. Atualmente, o Frontend, PostgreSQL e o CronJob estão operacionais e no status `Running`/`Completed`. O Backend também está `Running` e `1/1 READY` (com a observação sobre as probes de saúde).
 
 ### Próximos Passos Essenciais para Aprimoramento:
 
